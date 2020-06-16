@@ -12,9 +12,7 @@ from . import __version__
 from .types import IndexType, MetricType, Status
 from .check import check_pass_param, is_legal_host, is_legal_port
 from .pool import ConnectionPool, SingleConnectionPool, SingletonThreadPool
-from .grpc_handler import GrpcHandler
-from .http_handler import HttpHandler
-from .exceptions import ParamError, NotConnectError, DeprecatedError
+from .exceptions import ParamError, DeprecatedError
 
 from ..settings import DefaultConfig as config
 
@@ -113,17 +111,6 @@ class Milvus:
     def _connection(self):
         return self._pool.fetch()
 
-    @deprecated
-    def set_hook(self, **kwargs):
-        """
-        Deprecated
-        """
-        # TODO: may remove it.
-        if self._stub:
-            return self._stub.set_hook(**kwargs)
-
-        self._hooks.update(kwargs)
-
     @property
     def name(self):
         return self._name
@@ -131,37 +118,6 @@ class Milvus:
     @property
     def handler(self):
         return self._handler
-
-    @deprecated
-    def connect(self, host=None, port=None, uri=None, timeout=2):
-        """
-        Deprecated
-        """
-        if self.connected() and self._connected:
-            return Status(message="You have already connected {} !".format(self._uri),
-                          code=Status.CONNECT_FAILED)
-
-        if self._stub is None:
-            self._init(host, port, uri, handler=self._handler)
-
-        if self.ping(timeout):
-            self._status = Status(message="Connected")
-            self._connected = True
-            return self._status
-
-    @deprecated
-    def connected(self):
-        """
-        Deprecated
-        """
-        return True if self._status and self._status.OK() else False
-
-    @deprecated
-    def disconnect(self):
-        """
-        Deprecated
-        """
-        pass
 
     def close(self):
         """
@@ -214,21 +170,21 @@ class Milvus:
             return handler._cmd(cmd, timeout)
 
     @check_connect
-    def create_collection(self, param, timeout=30):
+    def create_collection(self, collection_name, fileds, timeout=30):
         """
         Creates a collection.
 
-        :type  param: dict
-        :param param: Information needed to create a collection.
+        :type  collection_name: str
+        :param collection_name: collection name.
 
-                `param={'collection_name': 'name',
-                                'dimension': 16,
-                                'index_file_size': 1024 (default)，
-                                'metric_type': Metric_type.L2 (default)
-                                }`
-
-        :param timeout: Timeout in seconds.
-        :type  timeout: double
+        :param fields: field params.
+        :type  fields: dict
+            ` [
+                    {"field_name": "A", "data_type": DataType.INT64},
+                    {"field_name": "B", "data_type": DataType.INT64},
+                    {"field_name": "C", "data_type": DataType.INT64},
+                    {"field_name": "Vec", "dimension": 128, "extra_params": {"index_file_size": 100, "metric_type": MetricType.L2}}
+            ]`
 
         :return: Whether the operation is successful.
         :rtype: Status
