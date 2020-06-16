@@ -39,6 +39,9 @@ class AbsMilvus:
     def _cmd(self, cmd, timeout=30):
         pass
 
+    """ Collection
+    """
+
     def create_collection(self, collection_name, fields, timeout=30):
         """
         Creates a collection.
@@ -52,10 +55,12 @@ class AbsMilvus:
                     {"field_name": "A", "data_type": DataType.INT64},
                     {"field_name": "B", "data_type": DataType.INT64},
                     {"field_name": "C", "data_type": DataType.INT64},
-                    {"field_name": "Vec", "data_type": DataType.BINARY_VECTOR, "dimension": 128, "extra_params": {"index_file_size": 100, "metric_type": MetricType.L2}}
+                    {"field_name": "Vec", "data_type": DataType.BINARY_VECTOR, "dimension": 128,
+                     "extra_params": {"index_file_size": 100, "metric_type": MetricType.L2}}
             ]`
 
-        :return: N/A
+        :return:
+            None
 
         :raises:
             CollectionNotExistException(BaseException)
@@ -116,8 +121,7 @@ class AbsMilvus:
         Returns collection list.
 
         :return:
-            collections: list of collection names, return when operation
-                    is successful
+            collections: list of collection names, return when operation is successful
 
         :raises:
 
@@ -128,45 +132,8 @@ class AbsMilvus:
         """
         Returns collection statistics information.
 
-        This API not define return values and exceptions
-
         :return:
-
             statistics: statistics information
-
-        :raises:
-        
-            CollectionNotExistException(BaseException)
-            IllegalCollectionNameException(BaseException)
-
-
-        """
-        pass
-
-    def load_collection(self, collection_name, timeout=None):
-        """
-        Loads a collection for cache.
-
-        :type collection_name: str
-        :param collection_name: collection to load
-
-        :return: N/A
-
-        :raises:
-            CollectionNotExistException(BaseException)
-            IllegalCollectionNameException(BaseException)
-
-        """
-        pass
-
-    def reload_segments(self, collection_name, segment_ids):
-        """
-            Load segment delete docs to cache
-
-            This API not define return values and exceptions
-
-        : return:
-            Status
 
         :raises:
             CollectionNotExistException(BaseException)
@@ -192,78 +159,8 @@ class AbsMilvus:
         """
         pass
 
-    def insert(self, collection_name, entities, ids=None, partition_tag=None, params=None):
-        """
-        Insert vectors to a collection.
-
-        :param collection_name:
-        :type  collection_name: str
-
-        :param entities:
-        :type  entities: dict
-        `{
-            "Attributes":  [
-                {"field": "A", "values": A_list},
-                {"field": "B", "field_values": A_list},
-                {"field": "C", "field_values": A_list, "datatype": datatype:},
-                {"field": "Vec", "field_values": vec}
-            ]
-        }`
-
-        :type  collection_name: str
-        :param collection_name: Name of the collection to insert vectors to.
-
-        :type partition_tag: str or None.
-            If partition_tag is None, vectors will be inserted to the collection rather than partitions.
-
-        :param partition_tag: Tag of a partition.
-
-       :return: N/A
-
-       :raises:
-            CollectionNotExistException(BaseException)
-            IllegalCollectionNameException(BaseException)
-            InvalidRowRecordException(BaseException)
-            InvalidVectorIdException(BaseException)
-            PartitionTagNotExistException(BaseException)
-            InvalidPartitionTagException(BaseException)
-        """
-        pass
-
-    def get_entity_by_id(self, collection_name, ids, timeout=None):
-        """
-        Returns raw vectors according to ids.
-
-        :param collection_name: Name of the collection
-        :type collection_name: str
-
-        :param ids: list of vector id
-        :type ids: list
-
-        :return:
-            Vectors: list[list[float]]
-
-        :raises:
-            CollectionNotExistException(BaseException)
-            InvalidVectorIdException(BaseException)
-            IllegalCollectionNameException(BaseException)
-
-        """
-        pass
-
-    def list_id_in_segment(self, collection_name, segment_name, timeout=None):
-        """
-        This API not define return values and exceptions
-
-        :returns:
-            ids: list[int]
-
-        :raises:
-            CollectionNotExistException(BaseException)
-            IllegalCollectionNameException(BaseException)
-
-        """
-        pass
+    """ Index
+    """
 
     def create_index(self, collection_name, params=None, timeout=None, **kwargs):
         """
@@ -273,7 +170,7 @@ class AbsMilvus:
         :type collection_name: str
 
         :param params: index params
-        :type params: 
+        :type params:
 
         :return:
             Status:
@@ -324,6 +221,9 @@ class AbsMilvus:
         """
         pass
 
+    """ Partition
+    """
+
     def create_partition(self, collection_name, partition_tag, timeout=30):
         """
         create a partition for a collection.
@@ -355,7 +255,6 @@ class AbsMilvus:
         """
         Check if specified partition exists.
 
-        This API not define return values and exceptions
 
         :param collection_name: target table name.
         :type  collection_name: str
@@ -364,11 +263,13 @@ class AbsMilvus:
         :type  partition_tag: str
 
         :return:
-            Status: Whether the operation is successful.
-            exists: If specified partition exists
+            exists: bool, if specified partition exists
 
         :raises:
-
+            CollectionNotExistException(BaseException)
+            IllegalCollectionNameException(BaseException)
+            IllegalPartitionNameException(BaseException)
+            ExceedPartitionMaxLimitException(BaseException)
 
         """
         pass
@@ -415,50 +316,101 @@ class AbsMilvus:
 
         """
         pass
-    
-    @deprecated
-    def search(self, collection_name, vector_params, dsl, partition_tags=None, params=None, **kwargs):
+
+    """ CRUD
+    """
+
+    def insert(self, collection_name, entities, ids=None, partition_tag=None, params=None):
         """
-        Search vectors in a collection.
+        Insert vectors to a collection.
+
+        :param collection_name:
+        :type  collection_name: str
+
+        :param entities:
+        :type  entities: dict
+        `{
+            "Attributes":  [
+                {"field": "A", "values": A_list},
+                {"field": "B", "field_values": A_list},
+                {"field": "C", "field_values": A_list, "datatype": datatype:},
+                {"field": "Vec", "field_values": vec}
+            ]
+        }`
+
+        :type  collection_name: str
+        :param collection_name: Name of the collection to insert vectors to.
+
+        :type partition_tag: str or None.
+            If partition_tag is None, vectors will be inserted to the collection rather than partitions.
+
+        :param partition_tag: Tag of a partition.
+
+       :return:
+            None
+
+       :raises:
+            CollectionNotExistException(BaseException)
+            IllegalCollectionNameException(BaseException)
+            InvalidRowRecordException(BaseException)
+            InvalidVectorIdException(BaseException)
+            PartitionTagNotExistException(BaseException)
+            InvalidPartitionTagException(BaseException)
+        """
+        pass
+
+    def delete_entity_by_id(self, collection_name, ids, timeout=None):
+        """
+        Deletes vectors in a collection by vector ID.
 
         :param collection_name: Name of the collection.
         :type  collection_name: str
 
-        :param vector_params:
-        :type  vector_params: dict
-            `[
-                {"ph_1": {"field_name": "Vec", "topk": 10, "params": {"nprobe": 10},},
-                 "vector": vec[:10]},
-            ]`
+        :param id_array: list of vector id
+        :type  id_array: list[int]
 
-        :param dsl:
-        :type  dsl: dict
-            `{
-                "bool": {
-                    "must": [
-                        {"term": {"field_name": "A", "values": [1, 2, 5]}},
-                        {"range": {"field_name": "B", "values": {"gt": "1", "lt": "100"}}},
-                        {"vector": "ph_1"}
-                    ],
-                },
-            }`
-
-        :param params:
-        :type  params: dict
-
-        :param partition_tags: tags to search
-        :type  partition_tags: list
-
-        :return
-            result: query result
+        :return:
+            Status: Whether the operation is successful.
+                - ID_NOT_EXIST
+                - DELETED
 
         :raises:
             CollectionNotExistException(BaseException)
             IllegalCollectionNameException(BaseException)
-            InvalidTopkException(BaseException)
-            InvalidSearchParamException(BaseException)
-            PartitionTagNotExistException(BaseException)
-            InvalidPartitionTagException(BaseException)
+            InvalidVectorIdException(BaseException)
+
+        """
+        pass
+
+    def get_entity_by_id(self, collection_name, ids, timeout=None):
+        """
+        Returns raw vectors according to ids.
+
+        :param collection_name: Name of the collection
+        :type collection_name: str
+
+        :param ids: list of vector id
+        :type ids: list
+
+        :return:
+            entities: [Undetermined]
+
+        :raises:
+            CollectionNotExistException(BaseException)
+            InvalidVectorIdException(BaseException)
+            IllegalCollectionNameException(BaseException)
+
+        """
+        pass
+
+    def list_id_in_segment(self, collection_name, segment_name, timeout=None):
+        """
+        :returns:
+            ids: list[int]
+
+        :raises:
+            CollectionNotExistException(BaseException)
+            IllegalCollectionNameException(BaseException)
 
         """
         pass
@@ -479,7 +431,7 @@ class AbsMilvus:
                      ],
                  },
              }`
-             
+
              `{
                  "bool": {
                      "must": [
@@ -533,25 +485,36 @@ class AbsMilvus:
         """
         pass
 
-    def delete_entity_by_id(self, collection_name, ids, timeout=None):
+    """ Memory
+    """
+
+    def load_collection(self, collection_name, timeout=None):
         """
-        Deletes vectors in a collection by vector ID.
+        Loads a collection for cache.
 
-        :param collection_name: Name of the collection.
-        :type  collection_name: str
-
-        :param id_array: list of vector id
-        :type  id_array: list[int]
+        :type collection_name: str
+        :param collection_name: collection to load
 
         :return:
-            Status: Whether the operation is successful.
-                - ID_NOT_EXIST
-                - DELETED
+            None
 
         :raises:
             CollectionNotExistException(BaseException)
             IllegalCollectionNameException(BaseException)
-            InvalidVectorIdException(BaseException)
+
+        """
+        pass
+
+    def reload_segments(self, collection_name, segment_ids):
+        """
+            Load segment delete docs to cache
+
+        : return:
+            None
+
+        :raises:
+            CollectionNotExistException(BaseException)
+            IllegalCollectionNameException(BaseException)
 
         """
         pass
@@ -563,7 +526,8 @@ class AbsMilvus:
         :type  collection_name_array: list
         :param collection_name: Name of one or multiple collections to flush.
 
-        :return: N/A
+        :return:
+            None
 
         :raises:
             CollectionNotExistException(BaseException)
@@ -591,6 +555,9 @@ class AbsMilvus:
         """
         pass
 
+    """ Config
+    """
+
     def get_config(self, parent_key, child_key):
         """
         Gets Milvus configurations.
@@ -604,4 +571,3 @@ class AbsMilvus:
 
         """
         pass
-
