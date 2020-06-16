@@ -39,7 +39,7 @@ class AbsMilvus:
     def _cmd(self, cmd, timeout=30):
         pass
 
-    def create_collection(self, collection_name, fileds, timeout=30):
+    def create_collection(self, collection_name, fields, timeout=30):
         """
         Creates a collection.
 
@@ -52,7 +52,7 @@ class AbsMilvus:
                     {"field_name": "A", "data_type": DataType.INT64},
                     {"field_name": "B", "data_type": DataType.INT64},
                     {"field_name": "C", "data_type": DataType.INT64},
-                    {"field_name": "Vec", "dimension": 128, "extra_params": {"index_file_size": 100, "metric_type": MetricType.L2}}
+                    {"field_name": "Vec", "data_type": DataType.BINARY_VECTOR, "dimension": 128, "extra_params": {"index_file_size": 100, "metric_type": MetricType.L2}}
             ]`
 
         :return: N/A
@@ -131,11 +131,13 @@ class AbsMilvus:
         This API not define return values and exceptions
 
         :return:
-            Status: indicate if this operation is successful
 
             statistics: statistics information
 
         :raises:
+        
+            CollectionNotExistException(BaseException)
+            IllegalCollectionNameException(BaseException)
 
 
         """
@@ -167,6 +169,8 @@ class AbsMilvus:
             Status
 
         :raises:
+            CollectionNotExistException(BaseException)
+            IllegalCollectionNameException(BaseException)
 
         """
         pass
@@ -199,12 +203,10 @@ class AbsMilvus:
         :type  entities: dict
         `{
             "Attributes":  [
-                {"field_name": "A", "field_values": A_list},
-                {"field_name": "B", "field_values": A_list},
-                {"field_name": "C", "field_values": A_list},
-            ],
-            "Vectors": [
-                {"field_name": "Vec", "field_values": vec}
+                {"field": "A", "values": A_list},
+                {"field": "B", "field_values": A_list},
+                {"field": "C", "field_values": A_list, "datatype": datatype:},
+                {"field": "Vec", "field_values": vec}
             ]
         }`
 
@@ -254,21 +256,24 @@ class AbsMilvus:
         This API not define return values and exceptions
 
         :returns:
+            ids: list[int]
 
         :raises:
+            CollectionNotExistException(BaseException)
+            IllegalCollectionNameException(BaseException)
 
         """
         pass
 
-    def create_index(self, collection_name, index_type=None, params=None, timeout=None, **kwargs):
+    def create_index(self, collection_name, params=None, timeout=None, **kwargs):
         """
         Creates index for a collection.
 
         :param collection_name: Collection used to create index.
         :type collection_name: str
 
-        :param index_type: index params
-        :type index_type: IndexType
+        :param params: index params
+        :type params: 
 
         :return:
             Status:
@@ -283,7 +288,7 @@ class AbsMilvus:
         """
         pass
 
-    def get_index_info(self, collection_name, timeout=30):
+    def get_index_info(self, collection_name, params, timeout=30):
         """
         Show index information of a collection.
 
@@ -300,7 +305,7 @@ class AbsMilvus:
         """
         pass
 
-    def drop_index(self, collection_name, timeout=30):
+    def drop_index(self, collection_name, params, timeout=30):
         """
         Removes an index.
 
@@ -410,7 +415,8 @@ class AbsMilvus:
 
         """
         pass
-
+    
+    @deprecated
     def search(self, collection_name, vector_params, dsl, partition_tags=None, params=None, **kwargs):
         """
         Search vectors in a collection.
@@ -457,7 +463,7 @@ class AbsMilvus:
         """
         pass
 
-    def search_pb(self, collection_name, query_entities, partition_tags=None, params=None, **kwargs):
+    def search(self, collection_name, query_entities, partition_tags=None, params=None, **kwargs):
         """
         :param collection_name:
         :type  collection_name: str
@@ -469,6 +475,14 @@ class AbsMilvus:
                      "must": [
                          {"term": {"A": {"values": [1, 2, 5]}}},
                          {"range": {"B": {"ranges": {RangeType.GT: 1, RangeType.LT: 100}}}},
+                         {"vector": {"Vec": {"topk": 10, "query": vec[: 1], "params": {"nprobe": 10}}}}
+                     ],
+                 },
+             }`
+             
+             `{
+                 "bool": {
+                     "must": [
                          {"vector": {"Vec": {"topk": 10, "query": vec[: 1], "params": {"nprobe": 10}}}}
                      ],
                  },
@@ -491,7 +505,7 @@ class AbsMilvus:
         """
         pass
 
-    def search_in_segment(self, collection_name, file_ids, query_entities, params=None, timeout=None):
+    def search_in_segment(self, collection_name, segment_ids, query_entities, params=None, timeout=None):
         """
         :param collection_name:
         :type  collection_name: str
@@ -519,7 +533,7 @@ class AbsMilvus:
         """
         pass
 
-    def delete_entity_by_id(self, collection_name, id_array, timeout=None):
+    def delete_entity_by_id(self, collection_name, ids, timeout=None):
         """
         Deletes vectors in a collection by vector ID.
 
@@ -542,7 +556,7 @@ class AbsMilvus:
         """
         pass
 
-    def flush(self, collection_name_array=None, timeout=None, **kwargs):
+    def flush(self, collection_names=None, timeout=None, **kwargs):
         """
         Flushes vector data in one collection or multiple collections to disk.
 
