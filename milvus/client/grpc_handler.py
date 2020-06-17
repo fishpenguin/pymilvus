@@ -35,8 +35,8 @@ def error_handler(*rargs):
             record_dict = {}
             try:
                 record_dict["API start"] = str(datetime.datetime.now())
-                if self._pre_ping:
-                    self.ping()
+                # if self._pre_ping:
+                #     self.ping()
                 record_dict["RPC start"] = str(datetime.datetime.now())
                 return func(self, *args, **kwargs)
             except grpc.FutureTimeoutError as e:
@@ -509,7 +509,8 @@ class GrpcHandler(ConnectIntf):
         body = insert_param if insert_param \
             else Prepare.insert_param(collection_name, records, partition_tag, ids, params)
 
-        rf = self._stub.Insert.future(body, wait_for_ready=True, timeout=timeout)
+        # rf = self._stub.Insert.future(body, wait_for_ready=True, timeout=timeout)
+        rf = self._stub.Insert.future(body, timeout=timeout)
         if kwargs.get("_async", False) is True:
             cb = kwargs.get("_callback", None)
             return InsertFuture(rf, cb)

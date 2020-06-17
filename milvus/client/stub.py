@@ -170,7 +170,7 @@ class Milvus:
             return handler._cmd(cmd, timeout)
 
     @check_connect
-    def create_collection(self, collection_name, fileds, timeout=30):
+    def create_collection(self, param, timeout=30):
         """
         Creates a collection.
 

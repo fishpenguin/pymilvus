@@ -94,7 +94,8 @@ class AbsMilvus:
         :type  collection_name: str
         :param collection_name: Name of the collection to describe.
 
-        :returns: TableSchema
+        :returns:
+            TableSchema
 
         :raises:
             CollectionNotExistException(BaseException)
@@ -398,7 +399,7 @@ class AbsMilvus:
         :raises:
             CollectionNotExistException(BaseException)
             IllegalCollectionNameException(BaseException)
-            InvalidVectorIdException(BaseException)
+            InvalidEntityIdException(BaseException)
 
         """
         pass
@@ -422,7 +423,7 @@ class AbsMilvus:
 
         :raises:
             CollectionNotExistException(BaseException)
-            InvalidVectorIdException(BaseException)
+            InvalidEntityIdException(BaseException)
             IllegalCollectionNameException(BaseException)
 
         """
