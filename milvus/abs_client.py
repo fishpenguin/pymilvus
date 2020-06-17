@@ -352,18 +352,18 @@ class AbsMilvus:
         :type  entities: dict
         `{
             "Attributes":  [
-                {"field": "A", "values": A_list},
-                {"field": "B", "field_values": A_list},
-                {"field": "C", "field_values": A_list, "datatype": datatype:},
-                {"field": "Vec", "field_values": vec}
+                {"field": "A", "values": A_list, "datatype": DataType.Int64},
+                {"field": "B", "values": A_list, "datatype": DataType.Int64},
+                {"field": "C", "values": A_list, "datatype": DataType.Int64},
+                {"field": "Vec", "values": vec, "datatype": DataType.VECTOR}
             ]
         }`
 
         :type  collection_name: str
-        :param collection_name: Name of the collection to insert vectors to.
+        :param collection_name: Name of the collection to insert entities to.
 
         :type partition_tag: str or None.
-            If partition_tag is None, vectors will be inserted to the collection rather than partitions.
+            If partition_tag is None, entities will be inserted to the collection rather than partitions.
 
         :param partition_tag: Tag of a partition.
 
