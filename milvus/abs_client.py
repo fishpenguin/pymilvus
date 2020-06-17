@@ -50,14 +50,15 @@ class AbsMilvus:
         :param collection_name: collection name.
 
         :param fields: field params.
-        :type  fields: list
-            ` [
-                    {"field_name": "A", "data_type": DataType.INT64, "index_params": {"index_name":"", "index_type":"", "params": {..}}}
-                    {"field_name": "B", "data_type": DataType.INT64},
-                    {"field_name": "C", "data_type": DataType.INT64},
-                    {"field_name": "Vec", "data_type": DataType.BINARY_VECTOR, "dimension": 128,
-                     "extra_params": {"index_file_size": 100, "metric_type": MetricType.L2}}
-            ]`
+        :type  fields: list, field num limitation : 32
+            ` {"fields": [
+                    {"field": "A", "type": DataType.INT64, "index": {"name":"", "type":"", "params": {..}}}
+                    {"field": "B", "type": DataType.INT64},
+                    {"field": "C", "type": DataType.INT64},
+                    {"field": "Vec", "type": DataType.BINARY_VECTOR, "dimension": 128,
+                     "extra_params": {"metric_type": MetricType.L2}}
+                ],
+            "segment_size": 100}`
 
         :return:
             None
@@ -165,7 +166,7 @@ class AbsMilvus:
     """ Index
     """
 
-    def create_index(self, collection_name, field_name, index_name, params=None, timeout=None, **kwargs):
+    def create_index(self, collection_name, field_name, index_name, params, timeout=None, **kwargs):
         """
         Creates index for a collection.
 
@@ -202,7 +203,14 @@ class AbsMilvus:
         """
         pass
 
-    def get_index_info(self, collection_name, field_name, index_name, params, timeout=30):
+       @deprecated
+    def list_indexes(self, collection_name, field_name):
+        """
+        """
+        pass
+        
+    @depracated
+    def get_index_info(self, collection_name, field_name, index_name, timeout=30):
         """
         Show index information of a collection.
 
@@ -221,7 +229,7 @@ class AbsMilvus:
         """
         pass
 
-    def drop_index(self, collection_name, field_name, index_name, params, timeout=30):
+    def drop_index(self, collection_name, field_name, index_name, timeout=30):
         """
         Removes an index.
 
@@ -351,14 +359,12 @@ class AbsMilvus:
 
         :param entities:
         :type  entities: dict
-        `{
-            "Attributes":  [
-                {"field": "A", "values": A_list, "datatype": DataType.Int64},
-                {"field": "B", "values": A_list, "datatype": DataType.Int64},
-                {"field": "C", "values": A_list, "datatype": DataType.Int64},
-                {"field": "Vec", "values": vec, "datatype": DataType.VECTOR}
-            ]
-        }`
+        `[
+                {"field": "A", "values": A_list, "type": DataType.Int64},
+                {"field": "B", "values": A_list, "type": DataType.Int64},
+                {"field": "C", "values": A_list, "type": DataType.Int64},
+                {"field": "Vec", "values": vec, "type": DataType.VECTOR}
+        ]`
 
         :type  collection_name: str
         :param collection_name: Name of the collection to insert entities to.
@@ -378,6 +384,7 @@ class AbsMilvus:
             InvalidVectorIdException(BaseException)
             PartitionTagNotExistException(BaseException)
             InvalidPartitionTagException(BaseException)
+            FieldsNotMatchException(BaseException)
         """
         pass
 
@@ -404,7 +411,7 @@ class AbsMilvus:
         """
         pass
 
-    def get_entity_by_id(self, collection_name, ids, timeout=None):
+    def get_entity_by_id(self, collection_name, ids, fields=None, timeout=None):
         """
         Returns raw vectors according to ids.
 
@@ -416,7 +423,7 @@ class AbsMilvus:
 
         :return:
             entities:
-                `collection["A", "B", "Vec"]
+                `collection mappings ["A", "B", "Vec"]
                  access value of field "A" in first result:
                     a = entities[0].A
                 `
