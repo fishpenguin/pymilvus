@@ -50,9 +50,9 @@ class AbsMilvus:
         :param collection_name: collection name.
 
         :param fields: field params.
-        :type  fields: dict
+        :type  fields: list
             ` [
-                    {"field_name": "A", "data_type": DataType.INT64},
+                    {"field_name": "A", "data_type": DataType.INT64, "index_params": {"index_name":"", "index_type":"", "params": {..}}}
                     {"field_name": "B", "data_type": DataType.INT64},
                     {"field_name": "C", "data_type": DataType.INT64},
                     {"field_name": "Vec", "data_type": DataType.BINARY_VECTOR, "dimension": 128,
@@ -63,7 +63,9 @@ class AbsMilvus:
             None
 
         :raises:
-            CollectionNotExistException(BaseException)
+            CollectionExistException(BaseException)
+            InvalidDimensionException(BaseException)
+            InvalidMetricTypeException(BaseException)
             IllegalCollectionNameException(BaseException)
         """
         pass
@@ -102,13 +104,13 @@ class AbsMilvus:
 
     def count_entities(self, collection_name, timeout=30):
         """
-        Returns the number of vectors in a collection.
+        Returns the number of entities in target collection.
 
         :type  collection_name: str
-        :param collection_name: target table name.
+        :param collection_name: target collection name.
 
         :returns:
-            count: int, table row count
+            count: int, count of entities
 
         :raises:
             CollectionNotExistException(BaseException)
@@ -162,15 +164,27 @@ class AbsMilvus:
     """ Index
     """
 
-    def create_index(self, collection_name, params=None, timeout=None, **kwargs):
+    def create_index(self, collection_name, field_name, index_name, params=None, timeout=None, **kwargs):
         """
         Creates index for a collection.
 
         :param collection_name: Collection used to create index.
-        :type collection_name: str
+        :type  collection_name: str
+
+        :param field_name:
+        :type  field_name: str
+
+        :param index_name:
+        :type  index_name: str
 
         :param params: index params
         :type params:
+            `{
+                "index_type": IndexType.IVF_FLAT,
+                "params": {
+                    "nlist": 128
+                }
+            }`
 
         :return:
             Status:
@@ -179,13 +193,15 @@ class AbsMilvus:
 
         :raises:
             CollectionNotExistException(BaseException)
+            IllegalCollectionNameException(BaseException)
+            IllegalFieldNameException(BaseException)
+            IllegalIndexNameException(BaseException)
             InvalidIndexParamsException(BaseException)
             InvalidIndexTypeException(BaseException)
-            IllegalCollectionNameException(BaseException)
         """
         pass
 
-    def get_index_info(self, collection_name, params, timeout=30):
+    def get_index_info(self, collection_name, field_name, index_name, params, timeout=30):
         """
         Show index information of a collection.
 
@@ -198,11 +214,13 @@ class AbsMilvus:
         :raises:
             CollectionNotExistException(BaseException)
             IllegalCollectionNameException(BaseException)
+            IllegalFieldNameException(BaseException)
+            IllegalIndexNameException(BaseException)
 
         """
         pass
 
-    def drop_index(self, collection_name, params, timeout=30):
+    def drop_index(self, collection_name, field_name, index_name, params, timeout=30):
         """
         Removes an index.
 
@@ -217,6 +235,8 @@ class AbsMilvus:
         :raises:
             CollectionNotExistException(BaseException)
             IllegalCollectionNameException(BaseException)
+            IllegalFieldNameException(BaseException)
+            IllegalIndexNameException(BaseException)
 
         """
         pass
@@ -245,7 +265,7 @@ class AbsMilvus:
         :raises:
             CollectionNotExistException(BaseException)
             IllegalCollectionNameException(BaseException)
-            IllegalPartitionNameException(BaseException)
+            IllegalPartitionTagException(BaseException)
             ExceedPartitionMaxLimitException(BaseException)
 
         """
@@ -268,7 +288,7 @@ class AbsMilvus:
         :raises:
             CollectionNotExistException(BaseException)
             IllegalCollectionNameException(BaseException)
-            IllegalPartitionNameException(BaseException)
+            IllegalPartitionTagEixception(BaseException)
             ExceedPartitionMaxLimitException(BaseException)
 
         """
@@ -310,9 +330,10 @@ class AbsMilvus:
                 - DROPPED
 
         :raises:
+            IllegalCollectionNameException(BaseException)
             CollectionNotExistException(BaseException)
             PartitionTagNotExistException(BaseException)
-            IllegalCollectionNameException(BaseException)
+            IllegalPartitionTagException(BaseException)
 
         """
         pass
@@ -347,7 +368,7 @@ class AbsMilvus:
         :param partition_tag: Tag of a partition.
 
        :return:
-            None
+            ids: list[int]
 
        :raises:
             CollectionNotExistException(BaseException)
@@ -361,13 +382,13 @@ class AbsMilvus:
 
     def delete_entity_by_id(self, collection_name, ids, timeout=None):
         """
-        Deletes vectors in a collection by vector ID.
+        Deletes entitiess in a collection by entity ID.
 
         :param collection_name: Name of the collection.
         :type  collection_name: str
 
-        :param id_array: list of vector id
-        :type  id_array: list[int]
+        :param ids: list of entity id
+        :type  ids: list[int]
 
         :return:
             Status: Whether the operation is successful.
@@ -393,7 +414,11 @@ class AbsMilvus:
         :type ids: list
 
         :return:
-            entities: [Undetermined]
+            entities:
+                `collection["A", "B", "Vec"]
+                 access value of field "A" in first result:
+                    a = entities[0].A
+                `
 
         :raises:
             CollectionNotExistException(BaseException)
@@ -426,19 +451,22 @@ class AbsMilvus:
                  "bool": {
                      "must": [
                          {"term": {"A": {"values": [1, 2, 5]}}},
-                         {"range": {"B": {"ranges": {RangeType.GT: 1, RangeType.LT: 100}}}},
-                         {"vector": {"Vec": {"topk": 10, "query": vec[: 1], "params": {"nprobe": 10}}}}
+                         {"range": {"B": {"ranges": {"GT": 1, "LT": 100}}}},
+                         {"vector": {"Vec": {"topk": 10, "query": vec[: 1], "params": {"index_name": Indextype.IVF_FLAT, "nprobe": 10}}}}
+                     ],
+                 },
+             }`
+            OR
+             `{
+                 "bool": {
+                     "must": [
+                         {"vector": {"Vec": {"topk": 10, "query": vec[: 1], "params": {"index_name": Indextype.IVF_FLAT, "nprobe": 10}}}}
                      ],
                  },
              }`
 
-             `{
-                 "bool": {
-                     "must": [
-                         {"vector": {"Vec": {"topk": 10, "query": vec[: 1], "params": {"nprobe": 10}}}}
-                     ],
-                 },
-             }`
+        :param partition_tags: partition tag list
+        :type  partition_tags: list[str]
 
         :param params: extra params.
         :type prams: dict
@@ -462,8 +490,8 @@ class AbsMilvus:
         :param collection_name:
         :type  collection_name: str
 
-        :param file_ids:
-        :type  file_ids: list[int]
+        :param segment_ids:
+        :type  segment_ids: list[int]
 
         :param query_entities:
         :type  query_entities: dict
